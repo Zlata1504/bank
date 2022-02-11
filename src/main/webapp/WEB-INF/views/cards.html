@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">xmlns:th="http://www.thymeleaf.org>
+<head>
+    <meta charset="UTF-8">
+    <title>List of cards</title>
+</head>
+<body>
+<div th:each="DebitCard:${card}">
+    <a th:text="${card.getNumberOfCard()}"></a>
+</div>
+
+</body>
+</html>
