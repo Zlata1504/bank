@@ -1,103 +1,154 @@
 package org.example.controller;
 
-import dao.DebitCardDao;
-import dao.LoanDao;
 import jakarta.validation.Valid;
+import org.example.dao.DebitCardDao;
+import org.example.dao.LoanDao;
+import org.example.dao.UserDao;
 import org.example.entity.DebitCard;
 import org.example.entity.Loan;
+import org.example.entity.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Random;
 
 @Controller
 public class MainController {
-//    private List<Loan> loans = new ArrayList<>();
-//    private List<DebitCard> cards = new ArrayList<>();
+    private final UserDao userDao;
+    private User user = null;
     private final DebitCardDao debitCardDao;
     private final LoanDao loanDao;
 
-    public MainController(DebitCardDao debitCardDao,LoanDao loanDao){
-        this.debitCardDao=debitCardDao;
-        this.loanDao=loanDao;
+    public MainController(UserDao userDao, DebitCardDao debitCardDao, LoanDao loanDao) {
+        this.userDao = userDao;
+        this.debitCardDao = debitCardDao;
+        this.loanDao = loanDao;
     }
+
     @GetMapping("/")
-    public String mainPage(){
+    public String mainPage() {
         return "main";
     }
 
     @GetMapping("/cards")
-    public String cards(Model model){
-        model.addAttribute("cards",debitCardDao.show());
+    public String cards(Model model) {
+        model.addAttribute("cards", user.getUsersCard());
 
         return "cards";
     }
 
     @GetMapping("/loans")
-    public String loans(Model model){
-        model.addAttribute("loans",loanDao.show());
+    public String loans(Model model) {
+        model.addAttribute("loans", user.getUsersLoans());
         return "loans";
     }
+
     @PostMapping("/cards")
-    public String addCard(@ModelAttribute @Valid DebitCard card){
-        Random rand=new Random();
-        String card1="SE";
-        for (int i = 0; i < 14; i++)
-        {
+    public String addCard(@ModelAttribute @Valid DebitCard card) {
+        Random rand = new Random();
+        String card1 = "SE";
+
+        for (int i = 0; i < 14; i++) {
             int n = rand.nextInt(10) + 0;
             card1 += Integer.toString(n);
         }
-        for (int i = 0; i < 16; i++)
-        {
-            if(i % 4 == 0)
-                System.out.print(" ");
-            System.out.print(card1.charAt(i));
-        }
+
         card.setNumberOfCard(card1);
-        Scanner scan=new Scanner(System.in);
-        System.out.println("Come up with a three-digit code");
-        int cvv= scan.nextInt();
+        int cvv = (int) (Math.random() * 900) + 100;
         card.setCvv(cvv);
+
         Calendar instance = Calendar.getInstance();
         instance.add(Calendar.YEAR, 2);
         Date newDate = instance.getTime();
+
         card.setExpirationDate(newDate);
-        debitCardDao.save(card);
+        card.setUser(user);
+
+        debitCardDao.addCard(card);
+        user.getUsersCard().add(card);
+        userDao.update(user);
+
         return "redirect:/cards";
     }
+
     @PostMapping("/loans")
     public String addLoans(@ModelAttribute @Valid Loan loan) {
-        
-        loan.setMonthlyPayment(genMonthlyPayment(loan.getSum(), loan.getPercent(), loan.getCreditTerm()));
+        loan.setMonthlyPayment(generateMonthlyPayment(loan.getSum(), loan.getPercent(), loan.getCreditTerm()));
+        loan.setDateOfIssue(generationDate());
+        loan.setUser(user);
 
         loanDao.save(loan);
-            return "addLoans";
+        user.getUsersLoans().add(loan);
+        userDao.update(user);
 
-        }
-
-    private double genMonthlyPayment(double sum, double percent, int creditTerm) {
-        double total = sum * (1 + percent/100);
-        double monthlyPayment = total / creditTerm;
-        return monthlyPayment;
+        return "redirect:/loans";
     }
 
-        @GetMapping("/newCard")
-        public String newCard (Model model){
-            model.addAttribute("card", new DebitCard());
-            return "cards";
+    @GetMapping("/newCard")
+    public String newCard(Model model) {
+        model.addAttribute("card", new DebitCard());
+
+        return "addCards";
+    }
+
+    @GetMapping("/newLoan")
+    public String newLoan(Model model) {
+        model.addAttribute("loan", new Loan());
+
+        return "addLoans";
+    }
+
+    @GetMapping("/login")
+    public String getLoginPage(Model model) {
+        model.addAttribute("user", new User());
+
+        return "login";
+    }
+
+    @GetMapping("/registration")
+    public String getRegisterPage(Model model) {
+        model.addAttribute("user", new User());
+
+        return "registration";
+    }
+
+    @PostMapping("/login")
+    public String doLogin(@ModelAttribute("user") User user) {
+        User loginUser = userDao.findByEmailAndPassword(user.getEmail(), user.getPassword());
+        if (loginUser != null) {
+            this.user = loginUser;
+
+            return "redirect:/cards";
         }
-        @GetMapping("/newLoan")
-        public String newLoan (Model model){
-            model.addAttribute("loan", new Loan());
-            return "loans";
-        }
 
+        return "login";
+    }
 
+    @PostMapping("/registration")
+    public String doRegister(@ModelAttribute("user") @Valid User user,
+                             BindingResult bindingResult) {
+        if (bindingResult.hasErrors())
+            return "registration";
 
+        user.setRegistrationDate(generationDate());
+        user.setUsersCard(new ArrayList<>());
+        user.setUsersLoans(new ArrayList<>());
+        userDao.save(user);
 
+        return "login";
+    }
 
+    private Date generationDate() {
+        return new Date();
+    }
+
+    private double generateMonthlyPayment(double sum, double percent, int creditTerm) {
+        double total = sum * (1 + percent / 100);
+        return total / creditTerm;
+    }
 }

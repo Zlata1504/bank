@@ -1,13 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">xmlns:th="http://www.thymeleaf.org>
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html" lang="en">
 <head>
     <meta charset="UTF-8">
     <title>List of cards</title>
 </head>
 <body>
-<div th:each="DebitCard:${card}">
-    <a th:text="${card.getNumberOfCard()}"></a>
-</div>
+<h1>Table of cards</h1>
+<table border="1">
+    <thead>
+    <tr>
+        <th>Number of card</th>
+        <th>Balance</th>
+        <th>CVV</th>
+        <th>Expiration date</th>
+    </tr>
+    </thead>
 
+    <tbody>
+    <tr th:each="card : ${cards}">
+        <td th:text="${card.numberOfCard}"/>
+        <td th:text="${card.balance}"/>
+        <td th:text="${card.cvv}"/>
+        <td th:text="${card.expirationDate}"/>
+    </tr>
+    </tbody>
+</table>
+<br>
+<button><a href="/">Back to main menu</a></button>
+<button><a href="/newCard">Add new Card</a></button>
+<button><a href="/loans">Show my loans</a></button>
 </body>
 </html>

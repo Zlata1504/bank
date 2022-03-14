@@ -1,23 +1,18 @@
 <!DOCTYPE html>
-<html lang="en"> xmlns:th="http://www.w3.org/1999/html"> xmlns:th="http://www.thymeleaf.org>
+<html lang="en"  xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Add Card</title>
 </head>
 <body>
-<form method="POST" th:action="@{/cards}" th:object="${card}">
-    <label>Enter nubmerCard: </label>
-    <input type="text" th:field="*{nubmerCard}">
+<form th:method="POST" th:action="@{/cards}" th:object="${card}">
+
+    <label for="balance">Enter balance</label>
+    <input type="text" th:field="*{balance}" id="balance"/>
+    <div th:if="${#fields.hasErrors('balance')}" th:errors="*{balance}">Error</div>
+
     <br/>
-    <label>Enter cvv: </label>
-    <input type="text" th:field="*{cvv}">
-    <br/>
-    <label>Enter expirationDate </label>
-    <input type="text" th:field="*{expirationDate}">
-    <br/>
-    <label>Enter balance </label>
-    <input type="text" th:field="*{balance}">
-    <br/>
+    <button type="submit">Create</button>
 
 </form>
 </body>

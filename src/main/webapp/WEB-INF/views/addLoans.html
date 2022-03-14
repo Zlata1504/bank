@@ -1,29 +1,32 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/html"> xmlns:th="http://www.thymeleaf.org>
+<html lang="en"  xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Add loan</title>
+    <title>Add loans</title>
 </head>
 <body>
-<!--/*@thymesVar id="loan" type=""*/-->
-<form method="POST" th:action="@{/loans}" th:object="${loan}">
-    <label>Enter sum: </label>
-    <input type="text" th:field="*{sum}">
-    <div style="color:red" th:if="${#fields.hasErrors('sum')}" th:errors="*{sum}">Error</div>
-    <br/>
-    <label>Enter dateOfIssue </label>
-    <input type="text" th:field="*{dateOfIssue}">
+<form th:method="POST" th:action="@{/loans}" th:object="${loan}">
+
+    <label for="sum">Enter amount</label>
+    <input type="text" th:field="*{sum}" id="sum"/>
+    <div th:if="${#fields.hasErrors('sum')}" th:errors="*{sum}">Error</div>
 
     <br/>
-    <label>Enter creditTerm: </label>
-    <input type="text" th:field="*{creditTerm}">
-    <br/>
-    <label>Enter monthlyPayment: </label>
-    <input type="text" th:field="*{monthlyPayment}">
+
+    <label for="percent">Enter percent</label>
+    <input type="text" th:field="*{percent}" id="percent"/>
+    <div th:if="${#fields.hasErrors('percent')}" th:errors="*{percent}">Error</div>
+
     <br/>
 
+    <label for="term">Enter term</label>
+    <input type="text" th:field="*{creditTerm}" id="term"/>
+    <div th:if="${#fields.hasErrors('creditTerm')}" th:errors="*{creditTerm}">Error</div>
 
-    
+    <br/>
+
+    <button type="submit">Create</button>
+
 </form>
 
 </body>
